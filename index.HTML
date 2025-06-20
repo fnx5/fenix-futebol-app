@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fênix Futebol da Massa - Protótipo Beta</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom colors based on PARTE 3.jpg visual identity */
+        /* Using a deeper red/brown for main branding, similar to the image's "A SOLUÇÃO" section background */
+        .bg-fenix-primary { background-color: #8B4513; /* SaddleBrown - close to image's main background */ }
+        .text-fenix-primary { color: #8B4513; }
+        .hover\:bg-fenix-primary-darker:hover { background-color: #61300D; /* Darker shade */ }
+        .bg-fenix-secondary { background-color: #F5DEB3; /* Wheat - lighter complementary for accents */ }
+        .text-fenix-secondary { color: #F5DEB3; }
+        .bg-fenix-accent-green { background-color: #4CAF50; /* A shade of green for highlights */ }
+        .bg-fenix-accent-purple { background-color: #9C27B0; /* A shade of purple for highlights */ }
+        .text-fenix-accent-green { color: #4CAF50; }
+        .text-fenix-accent-purple { color: #9C27B0; }
+        .bg-fenix-light-bg { background-color: #F8F8F8; /* Light gray for general background, similar to device backgrounds in image */ }
+
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Fundo cinza claro padrão */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinhar ao topo para melhor rolagem em telas pequenas */
+            min-height: 100vh;
+            padding: 20px 10px; /* Preenchimento para mobile */
+            box-sizing: border-box;
+        }
+        #app-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px; /* Largura típica de celular */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 700px; /* Altura mínima para sensação de app */
+        }
+        .page {
+            display: none;
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto; /* Habilitar rolagem para o conteúdo da página */
+            -webkit-overflow-scrolling: touch; /* Rolagem suave no iOS */
+        }
+        .page.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .nav-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 10px 0;
+            color: #6b7280; /* Gray-500 */
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 600; /* font-semibold */
+        }
+        .nav-button.active {
+            color: #8B4513; /* Fênix Primary color */
+        }
+        .nav-button:hover {
+            color: #A0522D; /* Lighter shade of SaddleBrown for hover */
+        }
+        /* Barra de rolagem personalizada para melhor estética */
+        .page::-webkit-scrollbar {
+            width: 8px;
+        }
+        .page::-webkit-scrollbar-track {
+            background: #f0f2f5;
+            border-radius: 10px;
+        }
+        .page::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* Gray-300 */
+            border-radius: 10px;
+        }
+        .page::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* Gray-400 */
+        }
+        .video-thumbnail {
+            width: 100%;
+            height: 120px; /* Altura menor para a galeria */
+            background-color: #e2e8f0; /* Gray-200 */
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #64748b; /* Slate-500 */
+            font-size: 0.875rem; /* text-sm */
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1rem; /* text-base */
+            font-weight: bold;
+            text-align: center;
+        }
+        .video-overlay span {
+            font-size: 0.75rem; /* text-xs */
+            font-weight: normal;
+        }
+        .star-rating {
+            display: flex;
+            align-items: center;
+        }
+        .star-rating svg {
+            color: #fbbf24; /* Yellow-400 for stars */
+            margin-right: 2px;
+        }
+        .feed-video-player {
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: grab;
+        }
+        .feed-video-player img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .feed-video-overlay-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            z-index: 10;
+        }
+        .feed-video-actions {
+            position: absolute;
+            right: 16px;
+            bottom: 20%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            color: white;
+            z-index: 10;
+        }
+        .feed-video-actions button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 600;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            padding: 8px;
+            transition: background-color 0.2s;
+        }
+        .feed-video-actions button:hover {
+            background-color: rgba(0,0,0,0.5);
+        }
+        .feed-video-actions svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container" class="relative">
+        <!-- Header -->
+        <div class="bg-fenix-primary text-fenix-secondary p-5 text-center rounded-t-xl shadow-md">
+            <h1 class="text-2xl font-bold">Fênix Futebol da Massa</h1>
+            <p class="text-sm mt-1">Sua Paixão, Sua Oportunidade.</p>
+        </div>
+
+        <!-- Pages Container -->
+        <div id="pages-container" class="flex-grow flex flex-col bg-fenix-light-bg">
+
+            <!-- 1. Tela de Boas-Vindas / Seleção de Perfil -->
+            <div id="welcome-page" class="page active">
+                <div class="flex flex-col items-center justify-center h-full text-center">
+                    <img src="https://placehold.co/150x150/8B4513/F5DEB3?text=Fênix" alt="Logo Fênix" class="mb-6 rounded-full shadow-lg">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Bem-vindo(a)!</h2>
+                    <p class="text-gray-600 mb-8">Escolha como você quer revolucionar o futebol:</p>
+                    <button class="btn btn-primary w-full max-w-xs mb-4 p-3 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors" onclick="selectRole('atleta')">Sou Atleta</button>
+                    <button class="btn btn-secondary w-full max-w-xs p-3 bg-gray-200 text-gray-800 rounded-xl shadow-md hover:bg-gray-300 transition-colors" onclick="selectRole('olheiro')">Sou Olheiro / Clube</button>
+                    <button class="btn btn-secondary w-full max-w-xs mt-4 p-3 bg-gray-200 text-gray-800 rounded-xl shadow-md hover:bg-gray-300 transition-colors" onclick="selectRole('profissional')">Sou Profissional</button>
+                </div>
+            </div>
+
+            <!-- 2. Tela Principal / Início (Home Screen) - Para Atleta após login -->
+            <div id="home-page" class="page">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center" id="home-greeting">Olá, Atleta!</h2>
+
+                <!-- Cards de Acesso Rápido -->
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-fenix-secondary p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-amber-100 transition-colors" onclick="showPage('atleta-profile-page')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-fenix-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <p class="text-sm font-semibold text-fenix-primary">Meu Perfil</p>
+                    </div>
+                    <div class="bg-fenix-accent-green bg-opacity-10 p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-fenix-accent-green hover:bg-opacity-20 transition-colors" onclick="showPage('feed-page')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-fenix-accent-green mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-sm font-semibold text-fenix-accent-green">Feed de Vídeos</p>
+                    </div>
+                    <div class="bg-fenix-accent-purple bg-opacity-10 p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-fenix-accent-purple hover:bg-opacity-20 transition-colors" onclick="showPage('oportunidades-page')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-fenix-accent-purple mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <p class="text-sm font-semibold text-fenix-accent-purple">Oportunidades</p>
+                    </div>
+                     <div class="bg-fenix-primary bg-opacity-10 p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-fenix-primary hover:bg-opacity-20 transition-colors" onclick="showPage('profissionais-page')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-fenix-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-1.39-8.255-3.745M12 9V6m0 0a2 2 0 100-4 2 2 0 000 4zm7.255 8.255A23.931 23.931 0 0112 15c-3.183 0-6.22-1.39-8.255-3.745M12 9V6m0 0a2 2 0 100-4 2 2 0 000 4z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17.255A23.931 23.931 0 0112 15c-3.183 0-6.22-1.39-8.255-3.745M12 9V6m0 0a2 2 0 100-4 2 2 0 000 4z" />
+                        </svg>
+                        <p class="text-sm font-semibold text-fenix-primary">Profissionais</p>
+                    </div>
+                </div>
+
+                <!-- Seção "Vídeos em Destaque" -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Vídeos em Destaque</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="video-thumbnail shadow-md" onclick="showPage('feed-page')">
+                            <img src="https://placehold.co/200x150/a0a0a0/ffffff?text=Gol+do+Ano!" alt="Gol do Ano">
+                            <div class="video-overlay">Gol do Ano!<span>João Silva - 1.2K views</span></div>
+                        </div>
+                        <div class="video-thumbnail shadow-md" onclick="showPage('feed-page')">
+                            <img src="https://placehold.co/200x150/b0b0b0/ffffff?text=Defesa+Incrível" alt="Defesa Incrível">
+                            <div class="video-overlay">Defesa Incrível<span>Maria P. - 980 views</span></div>
+                        </div>
+                         <div class="video-thumbnail shadow-md" onclick="showPage('feed-page')">
+                            <img src="https://placehold.co/200x150/c0c0c0/ffffff?text=Skills+Treino" alt="Skills Treino">
+                            <div class="video-overlay">Skills no Treino<span>Lucas B. - 750 views</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção "Oportunidades Recentes" -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Oportunidades Recentes</h3>
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-3">
+                        <p class="font-medium text-gray-800">Peneira Sub-17 - Grêmio</p>
+                        <p class="text-sm text-gray-600">Data: 25/07/2025 | Local: Porto Alegre - RS</p>
+                        <button class="text-fenix-primary text-sm mt-2 hover:underline" onclick="showPage('oportunidades-page')">Ver Detalhes</button>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm">
+                        <p class="font-medium text-gray-800">Teste para Várzea - Campeões da ZN</p>
+                        <p class="text-sm text-gray-600">Data: 01/08/2025 | Local: São Paulo - SP</p>
+                        <button class="text-fenix-primary text-sm mt-2 hover:underline" onclick="showPage('oportunidades-page')">Ver Detalhes</button>
+                    </div>
+                </div>
+
+                <!-- Seção "Nossos Parceiros Oficiais" -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Nossos Parceiros Oficiais</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-3 rounded-xl shadow-sm flex items-center justify-center">
+                            <img src="https://placehold.co/100x50/8B4513/F5DEB3?text=Nike" alt="Logo Nike" class="h-10 object-contain">
+                        </div>
+                        <div class="bg-white p-3 rounded-xl shadow-sm flex items-center justify-center">
+                            <img src="https://placehold.co/100x50/8B4513/F5DEB3?text=Vai+de+Bet" alt="Logo Vai de Bet" class="h-10 object-contain">
+                        </div>
+                        <div class="bg-white p-3 rounded-xl shadow-sm flex items-center justify-center">
+                            <img src="https://placehold.co/100x50/8B4513/F5DEB3?text=Cazé+TV" alt="Logo Cazé TV" class="h-10 object-contain">
+                        </div>
+                        <div class="bg-white p-3 rounded-xl shadow-sm flex items-center justify-center">
+                            <img src="https://placehold.co/100x50/8B4513/F5DEB3?text=Academia+Força" alt="Logo Academia Força" class="h-10 object-contain">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Tela de Perfil do Atleta -->
+            <div id="atleta-profile-page" class="page">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Meu Perfil de Atleta</h2>
+
+                <div class="flex flex-col items-center mb-6">
+                    <div class="relative w-32 h-32 rounded-full bg-fenix-secondary flex items-center justify-center overflow-hidden shadow-md">
+                        <img src="https://placehold.co/128x128/8B4513/F5DEB3?text=Foto" alt="Foto de Perfil" class="w-full h-full object-cover">
+                        <button class="absolute bottom-0 right-0 bg-fenix-primary text-white rounded-full p-2 hover:bg-fenix-primary-darker transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.513 1.916a1 1 0 00-1.414 1.414L10.586 10H8.586L4 14.586V16h1.414L10 11.414V9.414L14.586 5V4h-1.414l-2.793 2.793-1.414-1.414L10 3.414z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-lg font-medium text-gray-800 mt-4" id="atleta-nome-perfil">João Silva</p>
+                    <p class="text-sm text-gray-600" id="atleta-info-perfil">17 anos | Atacante | Pé Direito</p>
+                    <span class="bg-fenix-primary text-white text-xs font-semibold px-2 py-1 rounded-full mt-2" id="atleta-genero">MASC</span>
+                </div>
+
+                <div class="bg-fenix-secondary p-4 rounded-xl shadow-sm mb-6">
+                    <p class="text-lg font-medium text-fenix-primary mb-2">Bio</p>
+                    <p class="text-gray-700 text-sm leading-relaxed">Atacante rápido e com boa finalização, busco uma oportunidade para demonstrar meu potencial e realizar o sonho de ser jogador profissional.</p>
+                </div>
+
+                <div class="flex justify-around mb-6">
+                    <button class="p-3 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                            <path d="M15 7v2a4 4 0 01-4 4H9.874l-1.325 1.325a1 1 0 01-1.414 0l-1.325-1.325H4a2 2 0 00-2 2v4a2 2 0 002 2h7a2 2 0 002-2v-2h2a2 2 0 002-2V9a2 2 0 00-2-2h-2z" />
+                        </svg>
+                        Conversar
+                    </button>
+                    <button class="p-3 bg-gray-200 text-gray-800 rounded-xl shadow-md hover:bg-gray-300 transition-colors flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Seguir
+                    </button>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-3">Minhas Estatísticas</h3>
+                    <div class="bg-white p-4 rounded-xl shadow-sm">
+                        <p class="text-gray-700 mb-2"><strong class="text-fenix-primary">Gols:</strong> <span id="stat-gols">15</span></p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2"><div class="bg-fenix-primary h-2.5 rounded-full" style="width: 75%"></div></div>
+                        <p class="text-gray-700 mb-2"><strong class="text-fenix-primary">Assistências:</strong> <span id="stat-assistencias">8</span></p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2"><div class="bg-fenix-accent-green h-2.5 rounded-full" style="width: 60%"></div></div>
+                        <p class="text-gray-700"><strong class="text-fenix-primary">Partidas:</strong> <span id="stat-partidas">20</span></p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2"><div class="bg-fenix-accent-purple h-2.5 rounded-full" style="width: 90%"></div></div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-3">Galeria de Vídeos</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="video-thumbnail shadow-md">
+                            <img src="https://placehold.co/200x150/8B4513/F5DEB3?text=Gol+vs+Grêmio" alt="Vídeo de gol">
+                            <div class="video-overlay">Gol vs Grêmio<span>200 views</span></div>
+                        </div>
+                        <div class="video-thumbnail shadow-md">
+                            <img src="https://placehold.co/200x150/A0522D/F5DEB3?text=Treino+Tático" alt="Vídeo de treino">
+                            <div class="video-overlay">Treino Tático<span>150 views</span></div>
+                        </div>
+                        <div class="video-thumbnail shadow-md">
+                            <img src="https://placehold.co/200x150/CD853F/F5DEB3?text=Melhores+Momentos" alt="Vídeo de melhores momentos">
+                            <div class="video-overlay">Melhores Momentos<span>300 views</span></div>
+                        </div>
+                    </div>
+                    <button class="w-full p-3 mt-4 bg-fenix-accent-green text-white rounded-xl shadow-md hover:bg-green-600 transition-colors flex items-center justify-center" onclick="simulateUpload()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L6.293 6.707z" clip-rule="evenodd" />
+                        </svg>
+                        Upload de Vídeo
+                    </button>
+                </div>
+
+                <div class="text-center text-sm text-gray-500 mt-auto pt-4">
+                    <p>Seu perfil é a sua vitrine para o mundo do futebol!</p>
+                </div>
+            </div>
+
+            <!-- 4. Tela de Dashboard do Olheiro/Clube -->
+            <div id="olheiro-dashboard-page" class="page">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Banco de Talentos</h2>
+
+                <div class="mb-6 p-4 bg-fenix-secondary rounded-xl shadow-sm">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-3">Buscar Atletas</h3>
+                    <div class="mb-3">
+                        <label for="search-name" class="block text-sm font-medium text-gray-700 mb-1">Nome / Cidade:</label>
+                        <input type="text" id="search-name" class="w-full p-2 border border-gray-300 rounded-lg focus:border-fenix-primary focus:ring-fenix-primary" placeholder="Ex: João Silva, São Paulo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="search-posicao" class="block text-sm font-medium text-gray-700 mb-1">Posição:</label>
+                        <select id="search-posicao" class="w-full p-2 border border-gray-300 rounded-lg focus:border-fenix-primary focus:ring-fenix-primary">
+                            <option value="">Todas</option>
+                            <option value="Atacante">Atacante</option>
+                            <option value="Meio-Campo">Meio-Campo</option>
+                            <option value="Zagueiro">Zagueiro</option>
+                            <option value="Goleiro">Goleiro</option>
+                            <option value="Lateral Direito">Lateral Direito</option>
+                            <option value="Lateral Esquerdo">Lateral Esquerdo</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="search-idade-range" class="block text-sm font-medium text-gray-700 mb-1">Faixa Etária:</label>
+                        <select id="search-idade-range" class="w-full p-2 border border-gray-300 rounded-lg focus:border-fenix-primary focus:ring-fenix-primary">
+                            <option value="">Todas</option>
+                            <option value="under17">Menos de 17</option>
+                            <option value="17-20">17-20 anos</option>
+                            <option value="over20">Mais de 20</option>
+                        </select>
+                    </div>
+                     <div class="mb-3">
+                        <label for="search-gender" class="block text-sm font-medium text-gray-700 mb-1">Gênero:</label>
+                        <select id="search-gender" class="w-full p-2 border border-gray-300 rounded-lg focus:border-fenix-primary focus:ring-fenix-primary">
+                            <option value="">Ambos</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="search-state" class="block text-sm font-medium text-gray-700 mb-1">Estado:</label>
+                        <select id="search-state" class="w-full p-2 border border-gray-300 rounded-lg focus:border-fenix-primary focus:ring-fenix-primary">
+                            <option value="">Todos</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="BA">Bahia</option>
+                            <!-- Adicione mais estados conforme necessário -->
+                        </select>
+                    </div>
+                    <button class="w-full p-3 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors" onclick="searchAthletes()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Buscar Atletas
+                    </button>
+                </div>
+
+                <div id="athlete-results">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Resultados da Busca</h3>
+                    <!-- Cartões de atletas simulados -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <div class="flex items-center mb-2">
+                             <img src="https://placehold.co/40x40/8B4513/F5DEB3?text=F" alt="Foto Atleta" class="rounded-full mr-3">
+                            <div>
+                                <p class="text-lg font-medium text-gray-800">Mariana Costa <span class="bg-pink-500 text-white text-xs font-semibold px-2 py-1 rounded-full ml-2">FEM</span></p>
+                                <p class="text-sm text-fenix-primary">Atacante | 16 anos | MG</p>
+                            </div>
+                        </div>
+                        <div class="video-thumbnail my-3">
+                             <img src="https://placehold.co/200x150/A0522D/F5DEB3?text=Gol+Mariana" alt="Gol Mariana">
+                            <div class="video-overlay">Gol Espetacular!</div>
+                        </div>
+                        <p class="text-gray-700 text-sm">Gols: 18 | Assistências: 7</p>
+                        <div class="flex justify-end mt-3">
+                            <button class="p-2 bg-fenix-secondary text-fenix-primary rounded-full hover:bg-amber-100 transition-colors mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.874l-1.325 1.325a1 1 0 01-1.414 0l-1.325-1.325H4a2 2 0 00-2 2v4a2 2 0 002 2h7a2 2 0 002-2v-2h2a2 2 0 002-2V9a2 2 0 00-2-2h-2z" />
+                                </svg>
+                            </button>
+                            <button class="p-2 bg-fenix-accent-green bg-opacity-10 text-fenix-accent-green rounded-full hover:bg-fenix-accent-green hover:bg-opacity-20 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <div class="flex items-center mb-2">
+                            <img src="https://placehold.co/40x40/8B4513/F5DEB3?text=M" alt="Foto Atleta" class="rounded-full mr-3">
+                            <div>
+                                <p class="text-lg font-medium text-gray-800">João Victor</p>
+                                <p class="text-sm text-fenix-primary">Meio-Campo | 17 anos | SP</p>
+                            </div>
+                        </div>
+                        <div class="video-thumbnail my-3">
+                             <img src="https://placehold.co/200x150/CD853F/F5DEB3?text=Passe+João" alt="Passe João">
+                            <div class="video-overlay">Visão de Jogo!</div>
+                        </div>
+                        <p class="text-gray-700 text-sm">Assistências: 12 | Desarmes: 30</p>
+                         <div class="flex justify-end mt-3">
+                            <button class="p-2 bg-fenix-secondary text-fenix-primary rounded-full hover:bg-amber-100 transition-colors mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.874l-1.325 1.325a1 1 0 01-1.414 0l-1.325-1.325H4a2 2 0 00-2 2v4a2 2 0 002 2h7a2 2 0 002-2v-2h2a2 2 0 002-2V9a2 2 0 00-2-2h-2z" />
+                                </svg>
+                            </button>
+                            <button class="p-2 bg-fenix-accent-green bg-opacity-10 text-fenix-accent-green rounded-full hover:bg-fenix-accent-green hover:bg-opacity-20 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Tela do Feed de Vídeos (TikTok-like) -->
+            <div id="feed-page" class="page flex-grow-0 p-0">
+                <div id="feed-content" class="h-full w-full relative">
+                    <!-- Vídeo simulado será inserido aqui pelo JS -->
+                </div>
+            </div>
+
+            <!-- 6. Tela de Diretório de Profissionais -->
+            <div id="profissionais-page" class="page">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Profissionais do Futebol</h2>
+
+                <div class="mb-6 p-4 bg-fenix-secondary rounded-xl shadow-sm">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-3">Buscar Profissionais</h3>
+                    <div class="mb-3">
+                        <label for="prof-search-name" class="block text-sm font-medium text-gray-700 mb-1">Nome / Especialidade / Cidade:</label>
+                        <input type="text" id="prof-search-name" class="w-full p-2 border border-gray-300 rounded-lg focus:border-fenix-primary focus:ring-fenix-primary" placeholder="Ex: Fisioterapeuta, Rio">
+                    </div>
+                    <button class="w-full p-3 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors" onclick="searchProfessionals()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Buscar Profissionais
+                    </button>
+                </div>
+
+                <div id="professional-results">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Resultados da Busca</h3>
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <div class="flex items-center mb-2">
+                             <img src="https://placehold.co/40x40/8B4513/F5DEB3?text=Dra" alt="Foto Profissional" class="rounded-full mr-3">
+                            <div>
+                                <p class="text-lg font-medium text-gray-800">Dra. Ana Paula</p>
+                                <p class="text-sm text-fenix-primary">Nutricionista Esportiva | São Paulo - SP</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 text-sm mt-2">Especialista em dietas para performance e recuperação de atletas.</p>
+                        <div class="star-rating mt-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <span class="text-sm text-gray-600 ml-2">(4.0)</span>
+                        </div>
+                        <button class="w-full mt-3 p-2 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors">Contatar</button>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <div class="flex items-center mb-2">
+                             <img src="https://placehold.co/40x40/8B4513/F5DEB3?text=Dr" alt="Foto Profissional" class="rounded-full mr-3">
+                            <div>
+                                <p class="text-lg font-medium text-gray-800">Dr. Marcos Silva</p>
+                                <p class="text-sm text-fenix-primary">Fisioterapeuta | Rio de Janeiro - RJ</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 text-sm mt-2">Reabilitação de lesões, prevenção e otimização do movimento.</p>
+                        <div class="star-rating mt-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                            <span class="text-sm text-gray-600 ml-2">(5.0)</span>
+                        </div>
+                        <button class="w-full mt-3 p-2 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors">Contatar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Tela de Oportunidades e Testes -->
+            <div id="oportunidades-page" class="page">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Oportunidades e Testes</h2>
+
+                <div class="mb-6 p-4 bg-fenix-secondary rounded-xl shadow-sm">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-3">Buscar Oportunidades</h3>
+                    <div class="mb-3">
+                        <label for="opp-search-title" class="block text-sm font-medium text-gray-700 mb-1">Título / Clube / Cidade:</label>
+                        <input type="text" id="opp-search-title" class="w-full p-2 border border-gray-300 rounded-lg focus:border-fenix-primary focus:ring-fenix-primary" placeholder="Ex: Peneira Sub-17, Grêmio">
+                    </div>
+                    <div class="mb-3">
+                        <label for="opp-type" class="block text-sm font-medium text-gray-700 mb-1">Tipo:</label>
+                        <select id="opp-type" class="w-full p-2 border border-gray-300 rounded-lg focus:border-fenix-primary focus:ring-fenix-primary">
+                            <option value="">Todos</option>
+                            <option value="Peneira">Peneira</option>
+                            <option value="Teste">Teste</option>
+                            <option value="Seletiva">Seletiva</option>
+                            <option value="Campeonato">Campeonato</option>
+                        </select>
+                    </div>
+                    <button class="w-full p-3 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors" onclick="searchOpportunities()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Buscar Oportunidades
+                    </button>
+                </div>
+
+                <div id="opportunities-results">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Oportunidades Encontradas</h3>
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <p class="text-lg font-medium text-gray-800">Peneira Sub-17</p>
+                        <p class="text-sm text-fenix-primary">Tipo: Peneira | Clube: Grêmio</p>
+                        <p class="text-gray-700 text-sm mt-2">Requisitos: Nascidos em 2008-2009. Levar material de treino.</p>
+                        <p class="text-gray-700 text-sm">Data: 25/07/2025 | Local: Porto Alegre - RS</p>
+                        <button class="w-full mt-3 p-2 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors">Ver Detalhes</button>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <p class="text-lg font-medium text-gray-800">Teste Equipe Principal</p>
+                        <p class="text-sm text-fenix-primary">Tipo: Teste | Clube: Campeões da ZN (Várzea)</p>
+                        <p class="text-gray-700 text-sm mt-2">Requisitos: Atletas acima de 18 anos. Experiência em ligas amadoras.</p>
+                        <p class="text-gray-700 text-sm">Data: 01/08/2025 | Local: São Paulo - SP</p>
+                        <button class="w-full mt-3 p-2 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors">Ver Detalhes</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Navigation Bar (Hidden until role selected) -->
+        <div id="navbar" class="bg-white border-t border-gray-200 flex justify-around p-2 rounded-b-xl shadow-inner hidden">
+            <div class="nav-button active" data-page="home">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span id="home-nav-label">Início</span>
+            </div>
+            <div class="nav-button" data-page="search">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span id="search-nav-label">Buscar Talentos</span>
+            </div>
+            <div class="nav-button" data-page="feed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Feed</span>
+            </div>
+             <div class="nav-button" data-page="profissionais">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-1.39-8.255-3.745M12 9V6m0 0a2 2 0 100-4 2 2 0 000 4zm7.255 8.255A23.931 23.931 0 0112 15c-3.183 0-6.22-1.39-8.255-3.745M12 9V6m0 0a2 2 0 100-4 2 2 0 000 4z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17.255A23.931 23.931 0 0112 15c-3.183 0-6.22-1.39-8.255-3.745M12 9V6m0 0a2 2 0 100-4 2 2 0 000 4z" />
+                </svg>
+                <span>Profissionais</span>
+            </div>
+            <div class="nav-button" data-page="oportunidades">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>Oportunidades</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pages = document.querySelectorAll('.page');
+        const navButtons = document.querySelectorAll('.nav-button');
+        const navbar = document.getElementById('navbar');
+        const welcomePage = document.getElementById('welcome-page');
+        const homePage = document.getElementById('home-page');
+        const atletaProfilePage = document.getElementById('atleta-profile-page');
+        const olheiroDashboardPage = document.getElementById('olheiro-dashboard-page');
+        const profissionaisPage = document.getElementById('profissionais-page');
+        const oportunidadesPage = document.getElementById('oportunidades-page');
+        const feedPage = document.getElementById('feed-page');
+        const feedContent = document.getElementById('feed-content');
+
+        // Elementos do perfil do atleta (dados simulados)
+        const atletaNomePerfil = document.getElementById('atleta-nome-perfil');
+        const atletaInfoPerfil = document.getElementById('atleta-info-perfil');
+        const atletaGenero = document.getElementById('atleta-genero');
+        const statGols = document.getElementById('stat-gols');
+        const statAssistencias = document.getElementById('stat-assistencias');
+        const statPartidas = document.getElementById('stat-partidas');
+        const homeGreeting = document.getElementById('home-greeting');
+
+
+        let currentRole = null; // 'atleta', 'olheiro', 'profissional'
+
+        // Dados simulados de atletas para busca de olheiros
+        const dummyAthletes = [
+            { name: "Pedro Henrique", photo: "https://placehold.co/40x40/8B4513/F5DEB3?text=M", position: "Atacante", age: 17, gender: "Masculino", city: "São Paulo", state: "SP", goals: 15, assists: 7, img: "https://placehold.co/200x150/8B4513/F5DEB3?text=Gol+Pedro", bio: "Atacante rápido e com boa finalização." },
+            { name: "Mariana Eduarda", photo: "https://placehold.co/40x40/9C27B0/F5DEB3?text=F", position: "Meio-Campo", age: 16, gender: "Feminino", city: "Rio de Janeiro", state: "RJ", goals: 8, assists: 12, img: "https://placehold.co/200x150/A0522D/F5DEB3?text=Passe+Mariana", bio: "Meio-campista com excelente visão de jogo." },
+            { name: "Lucas Fernandes", photo: "https://placehold.co/40x40/8B4513/F5DEB3?text=M", position: "Zagueiro", age: 18, gender: "Masculino", city: "Belo Horizonte", state: "MG", goals: 2, assists: 1, img: "https://placehold.co/200x150/CD853F/F5DEB3?text=Desarme+Lucas", bio: "Zagueiro seguro e com boa saída de bola." },
+            { name: "Ana Clara", photo: "https://placehold.co/40x40/9C27B0/F5DEB3?text=F", position: "Goleiro", age: 19, gender: "Feminino", city: "Porto Alegre", state: "RS", saves: 50, cleanSheets: 10, img: "https://placehold.co/200x150/D2B48C/F5DEB3?text=Defesa+Ana", bio: "Goleira com reflexos apurados e liderança." },
+            { name: "João Pedro", photo: "https://placehold.co/40x40/8B4513/F5DEB3?text=M", position: "Lateral Esquerdo", age: 15, gender: "Masculino", city: "Recife", state: "PE", goals: 10, assists: 3, img: "https://placehold.co/200x150/DEB887/F5DEB3?text=Cruzamento+João", bio: "Lateral com muita força física e bom cruzamento." },
+        ];
+
+        // Dados simulados de profissionais
+        const dummyProfessionals = [
+            { name: "Dra. Ana Paula", photo: "https://placehold.co/40x40/8B4513/F5DEB3?text=Dra", specialty: "Nutricionista Esportiva", city: "São Paulo", state: "SP", rating: 4.0, description: "Especialista em dietas para performance e recuperação de atletas." },
+            { name: "Dr. Marcos Silva", photo: "https://placehold.co/40x40/8B4513/F5DEB3?text=Dr", specialty: "Fisioterapeuta", city: "Rio de Janeiro", state: "RJ", rating: 5.0, description: "Reabilitação de lesões, prevenção e otimização do movimento." },
+            { name: "Prof. Carlos Santos", photo: "https://placehold.co/40x40/8B4513/F5DEB3?text=Prof", specialty: "Preparador Físico", city: "Belo Horizonte", state: "MG", rating: 4.5, description: "Treinamento de força, resistência e agilidade focado em futebol." },
+        ];
+
+        // Dados simulados de oportunidades
+        const dummyOpportunities = [
+            { title: "Peneira Sub-17", type: "Peneira", club: "Grêmio", requirements: "Nascidos em 2008-2009. Levar material de treino.", date: "25/07/2025", location: "Porto Alegre - RS" },
+            { title: "Teste Equipe Principal", type: "Teste", club: "Campeões da ZN (Várzea)", requirements: "Atletas acima de 18 anos. Experiência em ligas amadoras.", date: "01/08/2025", location: "São Paulo - SP" },
+            { title: "Campeonato Feminino Sub-20", type: "Campeonato", club: "Liga Carioca", requirements: "Equipes de base feminina. Inscrições abertas.", date: "10/09/2025", location: "Rio de Janeiro - RJ" },
+        ];
+
+        // Dados simulados de vídeos para o feed
+        const dummyVideos = [
+            { id: 1, src: "https://placehold.co/400x700/8B4513/F5DEB3?text=Video+1%0AGol+Incrível!", title: "Gol Incrível!", athlete: "João Silva", position: "Atacante", likes: 123, comments: 25 },
+            { id: 2, src: "https://placehold.co/400x700/A0522D/F5DEB3?text=Video+2%0ADefesa+Sensacional!", title: "Defesa Sensacional!", athlete: "Ana Pereira", position: "Goleira", likes: 250, comments: 40 },
+            { id: 3, src: "https://placehold.co/400x700/CD853F/F5DEB3?text=Video+3%0AJogada+Individual!", title: "Jogada Individual!", athlete: "Pedro Rocha", position: "Meio-Campo", likes: 90, comments: 10 },
+            { id: 4, src: "https://placehold.co/400x700/D2B48C/F5DEB3?text=Video+4%0AEntrevista+Exclusiva!", title: "Entrevista Exclusiva!", athlete: "Fênix TV", position: "Conteúdo", likes: 300, comments: 50 },
+        ];
+        let currentVideoIndex = 0;
+
+
+        function showPage(pageId) {
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            navButtons.forEach(button => button.classList.remove('active'));
+            
+            // Determinar o botão de navegação ativo com base na página atual e role
+            let activeNavButtonId;
+            if (pageId === 'home-page' || pageId === 'atleta-profile-page' || pageId === 'olheiro-dashboard-page' || pageId === 'profissional-profile-page') {
+                activeNavButtonId = 'home';
+            } else if (pageId === 'feed-page') {
+                activeNavButtonId = 'feed';
+            } else if (pageId === 'profissionais-page') {
+                activeNavButtonId = 'profissionais';
+            } else if (pageId === 'oportunidades-page') {
+                activeNavButtonId = 'oportunidades';
+            } else {
+                activeNavButtonId = 'search'; // Default para buscar talentos/olheiros
+            }
+            
+            const activeButton = document.querySelector(`.nav-button[data-page="${activeNavButtonId}"]`);
+            if (activeButton) {
+                 activeButton.classList.add('active');
+            }
+
+            if (pageId === 'feed-page') {
+                renderFeedVideo(currentVideoIndex);
+            }
+        }
+
+        function selectRole(role) {
+            currentRole = role;
+            navbar.classList.remove('hidden'); // Exibir barra de navegação
+
+            if (role === 'atleta') {
+                homeGreeting.textContent = "Olá, Atleta!";
+                atletaNomePerfil.textContent = "João Silva"; // Nome simulado
+                atletaInfoPerfil.textContent = "17 anos | Atacante | Pé Direito | Time da Várzea SP";
+                atletaGenero.textContent = "MASC"; // Exemplo
+                statGols.textContent = "15";
+                statAssistencias.textContent = "8";
+                statPartidas.textContent = "20";
+                document.getElementById('home-nav-label').textContent = 'Início';
+                document.getElementById('search-nav-label').textContent = 'Buscar Olheiros';
+                showPage('home-page'); // Vai para a home principal do atleta
+            } else if (role === 'olheiro') {
+                homeGreeting.textContent = "Bem-vindo, Olheiro!";
+                document.getElementById('home-nav-label').textContent = 'Dashboard';
+                document.getElementById('search-nav-label').textContent = 'Buscar Atletas';
+                showPage('olheiro-dashboard-page');
+                searchAthletes(); // Busca inicial para olheiro
+            } else if (role === 'profissional') {
+                homeGreeting.textContent = "Olá, Profissional!";
+                document.getElementById('home-nav-label').textContent = 'Início';
+                document.getElementById('search-nav-label').textContent = 'Buscar Atletas'; // Profissional também pode buscar atletas
+                showPage('home-page'); // Vai para a home principal, que terá o conteúdo relevante para profissional no futuro.
+                                        // Por enquanto, apenas redireciona para a home genérica ou pode criar uma específica.
+            }
+        }
+
+        // Handler de clique da navegação
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const pageId = button.dataset.page;
+                if (pageId === 'home') {
+                    if (currentRole === 'atleta' || currentRole === 'profissional') {
+                        showPage('home-page');
+                    } else if (currentRole === 'olheiro') {
+                        showPage('olheiro-dashboard-page');
+                    }
+                } else if (pageId === 'search') {
+                     if (currentRole === 'atleta') {
+                        // Para atleta, 'buscar olheiros' não está implementado neste protótipo, redireciona para a home ou uma tela de info.
+                        showPage('olheiro-dashboard-page'); // temporariamente mostra a busca de atletas
+                    } else if (currentRole === 'olheiro') {
+                        showPage('olheiro-dashboard-page'); // A busca de olheiro é a página home dele
+                    } else if (currentRole === 'profissional') {
+                        showPage('olheiro-dashboard-page'); // Profissional também busca atletas
+                    }
+                } else if (pageId === 'feed') {
+                    showPage('feed-page');
+                } else if (pageId === 'profissionais') {
+                    showPage('profissionais-page');
+                } else if (pageId === 'oportunidades') {
+                    showPage('oportunidades-page');
+                }
+            });
+        });
+
+        // Funções do Atleta
+        function simulateUpload() {
+            // Simular um upload de arquivo
+            const messageBox = document.createElement('div');
+            messageBox.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50';
+            messageBox.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-lg text-center max-w-xs w-full">
+                    <p class="text-lg font-semibold text-gray-800 mb-4">Upload de Vídeo</p>
+                    <p class="text-gray-600 mb-6">Seu vídeo está sendo processado...</p>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                        <div class="bg-fenix-primary h-2.5 rounded-full" style="width: 0%" id="upload-progress"></div>
+                    </div>
+                    <p class="text-sm text-gray-500" id="upload-status">0%</p>
+                </div>
+            `;
+            document.body.appendChild(messageBox);
+
+            let progress = 0;
+            const progressBar = document.getElementById('upload-progress');
+            const uploadStatus = document.getElementById('upload-status');
+
+            const interval = setInterval(() => {
+                progress += 10;
+                if (progress <= 100) {
+                    progressBar.style.width = `${progress}%`;
+                    uploadStatus.textContent = `${progress}%`;
+                } else {
+                    clearInterval(interval);
+                    messageBox.remove();
+                    // Opcionalmente, adicionar uma nova miniatura de vídeo aqui
+                    const messageBoxSuccess = document.createElement('div');
+                    messageBoxSuccess.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50';
+                    messageBoxSuccess.innerHTML = `
+                        <div class="bg-white p-6 rounded-xl shadow-lg text-center max-w-xs w-full">
+                            <p class="text-lg font-semibold text-gray-800 mb-4">Sucesso!</p>
+                            <p class="text-gray-600 mb-6">Seu vídeo foi enviado com sucesso e está visível para olheiros!</p>
+                            <button class="p-3 bg-fenix-primary text-white rounded-xl hover:bg-fenix-primary-darker transition-colors" onclick="this.parentNode.parentNode.remove()">Fechar</button>
+                        </div>
+                    `;
+                    document.body.appendChild(messageBoxSuccess);
+                }
+            }, 200);
+        }
+
+        // Funções do Olheiro
+        function searchAthletes() {
+            const nameOrCity = document.getElementById('search-name').value.toLowerCase();
+            const position = document.getElementById('search-posicao').value;
+            const ageRange = document.getElementById('search-idade-range').value;
+            const gender = document.getElementById('search-gender').value;
+            const state = document.getElementById('search-state').value;
+            const resultsContainer = document.getElementById('athlete-results');
+            resultsContainer.innerHTML = `<h3 class="text-xl font-semibold text-gray-700 mb-4">Resultados da Busca</h3>`; // Limpar resultados anteriores
+
+            const filteredAthletes = dummyAthletes.filter(athlete => {
+                const matchesNameOrCity = !nameOrCity || athlete.name.toLowerCase().includes(nameOrCity) || athlete.city.toLowerCase().includes(nameOrCity);
+                const matchesPosition = !position || athlete.position === position;
+                const matchesAge = !ageRange || 
+                                   (ageRange === "under17" && athlete.age < 17) ||
+                                   (ageRange === "17-20" && athlete.age >= 17 && athlete.age <= 20) ||
+                                   (ageRange === "over20" && athlete.age > 20);
+                const matchesGender = !gender || athlete.gender === gender;
+                const matchesState = !state || athlete.state === state;
+
+                return matchesNameOrCity && matchesPosition && matchesAge && matchesGender && matchesState;
+            });
+
+            if (filteredAthletes.length === 0) {
+                resultsContainer.innerHTML += `<p class="text-gray-600 text-center mt-4">Nenhum atleta encontrado com esses critérios.</p>`;
+                return;
+            }
+
+            filteredAthletes.forEach(athlete => {
+                const athleteCard = `
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <div class="flex items-center mb-2">
+                             <img src="${athlete.photo}" alt="Foto Atleta" class="rounded-full mr-3">
+                            <div>
+                                <p class="text-lg font-medium text-gray-800">${athlete.name} ${athlete.gender === 'Feminino' ? '<span class="bg-pink-500 text-white text-xs font-semibold px-2 py-1 rounded-full ml-2">FEM</span>' : ''}</p>
+                                <p class="text-sm text-fenix-primary">${athlete.position} | ${athlete.age} anos | ${athlete.state}</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 text-sm mt-2">${athlete.bio}</p>
+                        <div class="video-thumbnail my-3">
+                             <img src="${athlete.img}" alt="${athlete.name} video">
+                            <div class="video-overlay">${athlete.position.includes('Atacante') ? 'Destaque de Gols!' : athlete.position.includes('Meio-Campo') ? 'Visão de Jogo!' : 'Lances!'}</div>
+                        </div>
+                        <p class="text-gray-700 text-sm">${athlete.goals ? `Gols: ${athlete.goals}` : ''} ${athlete.assists ? `| Assistências: ${athlete.assists}` : ''} ${athlete.saves ? `| Defesas: ${athlete.saves}` : ''}</p>
+                        <div class="flex justify-end mt-3">
+                            <button class="p-2 bg-fenix-secondary text-fenix-primary rounded-full hover:bg-amber-100 transition-colors mr-2" title="Conversar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.874l-1.325 1.325a1 1 0 01-1.414 0l-1.325-1.325H4a2 2 0 00-2 2v4a2 2 0 002 2h7a2 2 0 002-2v-2h2a2 2 0 002-2V9a2 2 0 00-2-2h-2z" />
+                                </svg>
+                            </button>
+                            <button class="p-2 bg-fenix-accent-green bg-opacity-10 text-fenix-accent-green rounded-full hover:bg-fenix-accent-green hover:bg-opacity-20 transition-colors" title="Seguir">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                resultsContainer.innerHTML += athleteCard;
+            });
+        }
+
+        // Funções do Feed (TikTok-like)
+        function renderFeedVideo(index) {
+            const video = dummyVideos[index];
+            feedContent.innerHTML = `
+                <div class="feed-video-player">
+                    <img src="${video.src}" alt="${video.title}">
+                    <div class="feed-video-overlay-content">
+                        <p class="text-xl font-bold">${video.title}</p>
+                        <p class="text-sm">@${video.athlete} - ${video.position}</p>
+                        <div class="flex items-center mt-2 text-xs">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            ${video.likes}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-4 mr-1" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                            ${video.comments}
+                        </div>
+                    </div>
+                    <div class="feed-video-actions">
+                        <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            <span>${video.likes}</span>
+                        </button>
+                        <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                            <span>${video.comments}</span>
+                        </button>
+                         <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.822 13.655 9.105 13.91 9.431 14.074L10 14.336l.27-.136a1.114 1.114 0 00.413-.42C10.749 13.633 11 13 11 12.5c0-.5-.251-1.133-.319-1.442L10.375 10H14.5a1.5 1.5 0 001.5-1.5V7.5a1.5 1.5 0 00-1.5-1.5h-4.625l-.319-.071c-.068-.015-.15-.035-.246-.035-.125 0-.25.04-.375.111L9.2 6.54c-.114.062-.224.137-.324.238l-2 2a1 1 0 000 1.414l2 2zM12 4a3 3 0 100 6 3 3 0 000-6z" />
+                            </svg>
+                            <span>Partilhar</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            // Adicionar funcionalidade de deslizar (swipe)
+            let startY;
+            feedContent.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+            });
+            feedContent.addEventListener('touchend', (e) => {
+                const endY = e.changedTouches[0].clientY;
+                if (startY - endY > 50) { // Deslizado para cima
+                    currentVideoIndex = (currentVideoIndex + 1) % dummyVideos.length;
+                    renderFeedVideo(currentVideoIndex);
+                } else if (endY - startY > 50) { // Deslizado para baixo
+                    currentVideoIndex = (currentVideoIndex - 1 + dummyVideos.length) % dummyVideos.length;
+                    renderFeedVideo(currentVideoIndex);
+                }
+            });
+        }
+
+        // Funções de Profissionais
+        function searchProfessionals() {
+            const searchTerm = document.getElementById('prof-search-name').value.toLowerCase();
+            const resultsContainer = document.getElementById('professional-results');
+            resultsContainer.innerHTML = `<h3 class="text-xl font-semibold text-gray-700 mb-4">Resultados da Busca</h3>`; // Limpar resultados anteriores
+
+            const filteredProfessionals = dummyProfessionals.filter(prof => {
+                return !searchTerm || 
+                       prof.name.toLowerCase().includes(searchTerm) || 
+                       prof.specialty.toLowerCase().includes(searchTerm) ||
+                       prof.city.toLowerCase().includes(searchTerm);
+            });
+
+            if (filteredProfessionals.length === 0) {
+                resultsContainer.innerHTML += `<p class="text-gray-600 text-center mt-4">Nenhum profissional encontrado com esses critérios.</p>`;
+                return;
+            }
+
+            filteredProfessionals.forEach(prof => {
+                const starsHtml = Array(5).fill('').map((_, i) => `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ${i < Math.floor(prof.rating) ? 'text-yellow-400' : 'text-gray-300'}" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.696h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.696l1.07-3.292z" /></svg>
+                `).join('');
+
+                const professionalCard = `
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <div class="flex items-center mb-2">
+                             <img src="${prof.photo}" alt="Foto Profissional" class="rounded-full mr-3">
+                            <div>
+                                <p class="text-lg font-medium text-gray-800">${prof.name}</p>
+                                <p class="text-sm text-fenix-primary">${prof.specialty} | ${prof.city} - ${prof.state}</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 text-sm mt-2">${prof.description}</p>
+                        <div class="star-rating mt-2">
+                            ${starsHtml}
+                            <span class="text-sm text-gray-600 ml-2">(${prof.rating.toFixed(1)})</span>
+                        </div>
+                        <button class="w-full mt-3 p-2 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors">Contatar</button>
+                    </div>
+                `;
+                resultsContainer.innerHTML += professionalCard;
+            });
+        }
+
+        // Funções de Oportunidades
+        function searchOpportunities() {
+            const searchTerm = document.getElementById('opp-search-title').value.toLowerCase();
+            const oppType = document.getElementById('opp-type').value;
+            const resultsContainer = document.getElementById('opportunities-results');
+            resultsContainer.innerHTML = `<h3 class="text-xl font-semibold text-gray-700 mb-4">Oportunidades Encontradas</h3>`; // Limpar resultados anteriores
+
+            const filteredOpportunities = dummyOpportunities.filter(opp => {
+                const matchesSearchTerm = !searchTerm || 
+                                          opp.title.toLowerCase().includes(searchTerm) || 
+                                          opp.club.toLowerCase().includes(searchTerm) ||
+                                          opp.location.toLowerCase().includes(searchTerm);
+                const matchesType = !oppType || opp.type === oppType;
+                return matchesSearchTerm && matchesType;
+            });
+
+            if (filteredOpportunities.length === 0) {
+                resultsContainer.innerHTML += `<p class="text-gray-600 text-center mt-4">Nenhuma oportunidade encontrada com esses critérios.</p>`;
+                return;
+            }
+
+            filteredOpportunities.forEach(opp => {
+                const opportunityCard = `
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <p class="text-lg font-medium text-gray-800">${opp.title}</p>
+                        <p class="text-sm text-fenix-primary">Tipo: ${opp.type} | Clube: ${opp.club}</p>
+                        <p class="text-gray-700 text-sm mt-2">Requisitos: ${opp.requirements}</p>
+                        <p class="text-gray-700 text-sm">Data: ${opp.date} | Local: ${opp.location}</p>
+                        <button class="w-full mt-3 p-2 bg-fenix-primary text-white rounded-xl shadow-md hover:bg-fenix-primary-darker transition-colors">Ver Detalhes</button>
+                    </div>
+                `;
+                resultsContainer.innerHTML += opportunityCard;
+            });
+        }
+
+        // Inicializar com a página de boas-vindas
+        showPage('welcome-page');
+    </script>
+</body>
+</html>
